@@ -1,1 +1,43 @@
+name: Rastgele Günlük Commit
 
+on:
+  schedule:
+    # Her gün sadece bir kere çalışır (UTC saatiyle 00:00'da)
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  auto-commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Depoyu Klonla
+        uses: actions/checkout@v4
+
+      - name: Rastgele Sayıda Commit Oluştur ve Gönder
+        run: |
+          # BİLGİLERİNİ BURAYA GİRMEYİ UNUTMA
+          git config --global user.name "Senin GitHub Kullanıcı Adın"
+          git config --global user.email "senin.email@adresin.com"
+          
+          # 0 ile 8 arasında rastgele bir sayı belirle (9 dahil değil)
+          NUM_COMMITS=$((RANDOM % 9))
+          echo "Bugün $NUM_COMMITS adet commit atılacak."
+          
+          # Eğer rastgele sayı 0 geldiyse, hiçbir şey yapmadan işlemi bitir
+          if [ $NUM_COMMITS -eq 0 ]; then
+            echo "Şansına bugün pas geçiliyor (0 commit)."
+            exit 0
+          fi
+          
+          # Belirlenen rastgele sayı kadar döngüye girip ardı ardına commit oluştur
+          for i in $(seq 1 $NUM_COMMITS); do
+            echo "Otomatik güncelleme: $(date) - Commit No: $i" >> commit_log.txt
+            git add commit_log.txt
+            git commit -m "Otomatik güncelleme eklendi (Rastgele Commit)"
+          done
+          
+          # Oluşturulan tüm commit'leri GitHub'a yolla
+          git push
